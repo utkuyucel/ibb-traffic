@@ -12,10 +12,8 @@ venv_*/
 # pycache
 __pycache__/
 
-# python bytecode
-*.pyc
-*.pyo
-*.pyd
+# ruff cache
+.ruff_cache/
 
 # files
 .csv
@@ -32,6 +30,12 @@ __pycache__/
 # coverage reports
 .coverage
 .coverage.*
+htmlcov/
+coverage.xml
 
 # pytest cache
 .pytest_cache/
+
+# egg files
+*.egg
+*.egg-info
