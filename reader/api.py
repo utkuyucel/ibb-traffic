@@ -7,16 +7,14 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
+try:
+    from .exceptions import ApiError, ApiConnectionError, ApiTimeoutError, ApiHttpError, ApiParsingError
+except ImportError:
+    # For direct execution
+    from exceptions import ApiError, ApiConnectionError, ApiTimeoutError, ApiHttpError, ApiParsingError
+
 
 logger = logging.getLogger(__name__)
-
-
-class ApiError(Exception):
-    """Custom exception for API-related errors."""
-    
-    def __init__(self, message: str, status_code: Optional[int] = None):
-        super().__init__(message)
-        self.status_code = status_code
 
 
 @dataclass(frozen=True)
@@ -31,11 +29,6 @@ class ApiResponse:
     def is_successful(self) -> bool:
         """Check if the API response was successful."""
         return 200 <= self.status_code < 300
-    
-    @property
-    def has_data(self) -> bool:
-        """Check if the response contains data."""
-        return bool(self.data)
 
 
 class ApiClient:
@@ -72,6 +65,12 @@ class ApiClient:
             # Use direct requests call for better testability while keeping session benefits
             response = requests.get(url, params=params, timeout=self.timeout)
             return self._handle_response(response)
+        except requests.Timeout as e:
+            logger.error(f"API request timed out: {e}")
+            raise ApiTimeoutError(f"Request timed out after {self.timeout} seconds: {e}")
+        except requests.ConnectionError as e:
+            logger.error(f"API connection failed: {e}")
+            raise ApiConnectionError(f"Failed to connect to API: {e}")
         except requests.RequestException as e:
             logger.error(f"API request failed: {e}")
             raise ApiError(f"API call failed: {e}")
@@ -85,6 +84,12 @@ class ApiClient:
             # Use direct requests call for better testability while keeping session benefits
             response = requests.post(url, json=data, timeout=self.timeout)
             return self._handle_response(response)
+        except requests.Timeout as e:
+            logger.error(f"API request timed out: {e}")
+            raise ApiTimeoutError(f"Request timed out after {self.timeout} seconds: {e}")
+        except requests.ConnectionError as e:
+            logger.error(f"API connection failed: {e}")
+            raise ApiConnectionError(f"Failed to connect to API: {e}")
         except requests.RequestException as e:
             logger.error(f"API request failed: {e}")
             raise ApiError(f"API call failed: {e}")
@@ -109,16 +114,16 @@ class ApiClient:
         except requests.RequestException as e:
             error_msg = f"Request failed: {e}"
             logger.error(error_msg)
-            raise ApiError(error_msg)
+            raise ApiConnectionError(error_msg)
 
     def _parse_response_data(self, response: requests.Response) -> List[Dict[str, Any]]:
         """Parse response data from JSON."""
         try:
             data = response.json()
             return data if isinstance(data, list) else [data]
-        except ValueError:
-            logger.warning("Response is not valid JSON")
-            return []
+        except ValueError as e:
+            logger.warning(f"Response is not valid JSON: {e}")
+            raise ApiParsingError(f"Failed to parse JSON response: {e}")
 
 
 def main() -> None:
@@ -132,13 +137,21 @@ def main() -> None:
         print("Response from API:")
         print(f"Status code: {response.status_code}")
         print(f"Successful: {response.is_successful}")
-        print(f"Has data: {response.has_data}")
         print(f"Data count: {len(response.data)}")
         print(f"Message: {response.message or 'None'}")
-        
-        if response.has_data:
-            print(f"First item: {response.data[0] if response.data else 'None'}")
+
+        if response.data:
+            print(f"First item: {response.data[0]}")
             
+    except ApiTimeoutError as e:
+        logger.error(f"API timeout error: {e}")
+        print(f"API timeout error: {e}")
+    except ApiConnectionError as e:
+        logger.error(f"API connection error: {e}")
+        print(f"API connection error: {e}")
+    except ApiParsingError as e:
+        logger.error(f"API parsing error: {e}")
+        print(f"API parsing error: {e}")
     except ApiError as e:
         logger.error(f"API error: {e}")
         print(f"API error: {e}")

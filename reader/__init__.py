@@ -4,6 +4,13 @@ This module provides a simple API client for accessing IBB traffic data.
 """
 
 from .api import ApiClient, ApiResponse
+from .exceptions import (
+    ApiError,
+    ApiConnectionError,
+    ApiTimeoutError,
+    ApiHttpError,
+    ApiParsingError,
+)
 
 
 __version__ = "0.1.0"
