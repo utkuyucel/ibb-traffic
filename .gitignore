@@ -1,0 +1,37 @@
+# environment variables
+.env
+
+# virtual environments
+venv/
+*_venv/
+venv_*/
+
+# mypy cache
+.mypy_cache/
+
+# pycache
+__pycache__/
+
+# python bytecode
+*.pyc
+*.pyo
+*.pyd
+
+# files
+.csv
+.png
+.jpeg
+.jpg
+
+# jupyter notebook checkpoints
+.ipynb_checkpoints/
+
+# logs
+*.log
+
+# coverage reports
+.coverage
+.coverage.*
+
+# pytest cache
+.pytest_cache/
