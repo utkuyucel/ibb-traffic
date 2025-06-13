@@ -39,3 +39,7 @@ coverage.xml
 # egg files
 *.egg
 *.egg-info
+
+# copilot instructions
+copilot-instructions.md
+
