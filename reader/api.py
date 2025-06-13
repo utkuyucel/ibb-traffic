@@ -49,7 +49,7 @@ class ApiClient:
                 logger.warning("Response is not valid JSON")
                 return ApiResponse(status_code=response.status_code, data=[])
         else:
-            logger.error("API request failed with status:", response.status_code)
+            logger.error(f"API request failed with status code {response.status_code}.")
             return ApiResponse(status_code=response.status_code, data=[], message=response.text)
 
 
